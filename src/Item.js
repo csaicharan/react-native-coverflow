@@ -1,6 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, createContext } from 'react';
 import { Animated, TouchableWithoutFeedback, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
+
+// Create context for animated position
+export const AnimatedPositionContext = createContext();
 
 const styles = StyleSheet.create({
   container: {
@@ -29,20 +32,6 @@ class Item extends Component {
     onSelect: PropTypes.func.isRequired,
   };
 
-  static childContextTypes = {
-    animatedPosition: PropTypes.instanceOf(Animated.Interpolation),
-  };
-
-  getChildContext() {
-    const { scroll, position } = this.props;
-    return {
-      animatedPosition: scroll.interpolate({
-        inputRange: [position - 2, position - 1, position, position + 1, position + 2],
-        outputRange: [-1, -1, 0, 1, 1],
-      }),
-    };
-  }
-
   shouldComponentUpdate(nextProps) {
     // Only if the props are different
     return nextProps.position !== this.props.position
@@ -69,6 +58,11 @@ class Item extends Component {
       spacing,
       onSelect,
     } = this.props;
+
+    const animatedPosition = scroll.interpolate({
+      inputRange: [position - 2, position - 1, position, position + 1, position + 2],
+      outputRange: [-1, -1, 0, 1, 1],
+    });
 
     const style = {
       transform: [
@@ -111,13 +105,15 @@ class Item extends Component {
     };
 
     return (
-      <View pointerEvents="box-none" style={styles.container}>
-        <TouchableWithoutFeedback onPress={() => onSelect(position)}>
-          <Animated.View style={style}>
-            {this.props.children}
-          </Animated.View>
-        </TouchableWithoutFeedback>
-      </View>
+      <AnimatedPositionContext.Provider value={animatedPosition}>
+        <View pointerEvents="box-none" style={styles.container}>
+          <TouchableWithoutFeedback onPress={() => onSelect(position)}>
+            <Animated.View style={style}>
+              {this.props.children}
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </AnimatedPositionContext.Provider>
     );
   }
 }

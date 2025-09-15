@@ -37,6 +37,7 @@ class Coverflow extends Component {
     children: PropTypes.arrayOf(PropTypes.element).isRequired,
     onPress: PropTypes.func,
     onChange: PropTypes.func.isRequired,
+    style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   };
 
   static defaultProps = {
@@ -69,7 +70,7 @@ class Coverflow extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const { scrollX, sensitivity } = this.state;
     this.scrollListener = scrollX.addListener(this.onScroll);
 
@@ -104,6 +105,7 @@ class Coverflow extends Component {
           Animated.decay(scrollX, {
             velocity,
             deceleration,
+            useNativeDriver: false,
           }).start(({ finished }) => {
             // Only snap to finish if the animation was completed gracefully
             if (finished) {
@@ -117,25 +119,27 @@ class Coverflow extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     // Check if the children property changes on addition / removal
-    const sensitivity = convertSensitivity(nextProps.sensitivity);
-    const selection = clamp(this.state.selection, 0, Children.count(nextProps.children) - 1);
-    const children = fixChildrenOrder(nextProps, selection);
+    if (prevProps.children !== this.props.children || prevProps.sensitivity !== this.props.sensitivity) {
+      const sensitivity = convertSensitivity(this.props.sensitivity);
+      const selection = clamp(this.state.selection, 0, Children.count(this.props.children) - 1);
+      const children = fixChildrenOrder(this.props, selection);
 
-    if (this.state.selection !== selection) {
-      this.state.scrollX.setValue(selection);
+      if (this.state.selection !== selection) {
+        this.state.scrollX.setValue(selection);
+      }
+
+      this.setState({
+        selection,
+        sensitivity,
+        children,
+      });
     }
-
-    this.setState({
-      selection,
-      sensitivity,
-      children,
-    });
   }
 
   componentWillUnmount() {
-    this.state.scrollX.removeListener(this.listenerId);
+    this.state.scrollX.removeListener(this.scrollListener);
   }
 
   onScroll = ({ value }) => {
@@ -180,6 +184,7 @@ class Coverflow extends Component {
 
       Animated.spring(scrollX, {
         toValue: finalPos,
+        useNativeDriver: false,
       }).start();
     }
   }

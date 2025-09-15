@@ -1,6 +1,10 @@
 # react-native-coverflow
 A Coverflow component for react-native.
 
+## Compatibility
+- React Native: `>=0.60.0` (up to 0.80.2 and beyond)
+- React: `>=16.8.0` (including React 18)
+
 ## Installation
 >`$ npm install --save react-native-coverflow`
 
@@ -71,3 +75,21 @@ A scale factor for the card adjacent to the center.
 
 ### scaleFurther :number default 0.75
 A diminising scale factor for the card next to the adjacent card.
+
+## TypeScript Support
+This package includes TypeScript definitions for better development experience.
+
+## Changelog
+### v0.2.0 (Latest)
+- ✅ Updated to support React Native 0.60.0+ (up to 0.80.2 and beyond)
+- ✅ Added React 18 compatibility  
+- ✅ Modernized build toolchain (Babel 7, ESLint 8, Jest 29)
+- ✅ Replaced deprecated React lifecycle methods
+- ✅ Updated Animated API with `useNativeDriver: false` for compatibility
+- ✅ Added TypeScript definitions
+- ✅ Replaced legacy context API with modern React Context
+
+### Breaking Changes from v0.1.x:
+- Minimum React Native version is now 0.60.0 (was 0.40.0)
+- Minimum React version is now 16.8.0 (was 15.0.0)
+- Build tools updated - if you have custom build configurations, you may need to update them

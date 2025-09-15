@@ -1,16 +1,18 @@
 {
   "name": "react-native-coverflow",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Coverflow component for React Native",
   "main": "lib/Coverflow.js",
+  "types": "index.d.ts",
   "files": [
     "docs",
-    "lib"
+    "lib",
+    "index.d.ts"
   ],
   "scripts": {
-    "build": "babel --out-dir lib --ignore __tests__ src --source-maps",
+    "build": "babel --out-dir lib --ignore '**/__tests__/**' src --source-maps",
     "clean": "rimraf lib && mkdir lib",
-    "prepublish": "rimraf lib && babel --out-dir lib --ignore __tests__ src",
+    "prepublishOnly": "rimraf lib && babel --out-dir lib --ignore '**/__tests__/**' src",
     "test": "jest"
   },
   "repository": {
@@ -24,21 +26,22 @@
   },
   "homepage": "https://github.com/Bhoos/react-native-coverflow#readme",
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-eslint": "^7.2.1",
-    "babel-jest": "^19.0.0",
-    "babel-preset-react-native": "^1.9.1",
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^14.1.0",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.10.3",
-    "jest": "^19.0.2",
-    "rimraf": "^2.6.1"
+    "@babel/cli": "^7.22.0",
+    "@babel/core": "^7.22.0",
+    "@babel/eslint-parser": "^7.22.0",
+    "@react-native/babel-preset": "^0.74.0",
+    "eslint": "^8.44.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.5.0",
+    "rimraf": "^5.0.1"
   },
   "peerDependencies": {
-    "react": "^15.0.0 || ^16.0.0-beta",
-    "react-native": "^0.40.0"
+    "react": ">=16.8.0",
+    "react-native": ">=0.60.0"
   },
   "dependencies": {
     "prop-types": "^15.6.0"

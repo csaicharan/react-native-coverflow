@@ -1,6 +1,12 @@
 {
-  "extends": "airbnb",
-  "parser": "babel-eslint",
+  "extends": ["airbnb", "airbnb/hooks"],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@react-native/babel-preset"]
+    }
+  },
   "rules": {
     "react/jsx-filename-extension": ["error", { "extensions": ["js", "jsx"]}]
   }
