@@ -84,6 +84,11 @@ const Item = memo(({
         }),
       },
     ],
+    // Add zIndex to ensure center item appears above others
+    zIndex: scroll.interpolate({
+      inputRange: [position - 2, position - 1, position, position + 1, position + 2],
+      outputRange: [1, 2, 10, 2, 1],
+    }),
   };
 
   return (
