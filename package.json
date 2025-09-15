@@ -2,11 +2,12 @@
   "name": "react-native-coverflow",
   "version": "0.2.0",
   "description": "Coverflow component for React Native",
-  "main": "lib/Coverflow.js",
+  "main": "index.js",
   "types": "index.d.ts",
   "files": [
     "docs",
     "lib",
+    "index.js",
     "index.d.ts"
   ],
   "scripts": {
@@ -29,7 +30,10 @@
     "@babel/cli": "^7.22.0",
     "@babel/core": "^7.22.0",
     "@babel/eslint-parser": "^7.22.0",
-    "@react-native/babel-preset": "^0.74.0",
+    "@babel/preset-env": "^7.22.0",
+    "@babel/preset-react": "^7.22.0",
+    "@babel/plugin-transform-class-properties": "^7.22.0",
+    "@babel/plugin-transform-react-jsx": "^7.22.0",
     "eslint": "^8.44.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.27.5",
