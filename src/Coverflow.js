@@ -92,10 +92,9 @@ class Coverflow extends Component {
         scrollX.stopAnimation();
         scrollX.extractOffset();
       },
-      onPanResponderTerminationRequest: () => true,
+      onPanResponderTerminationRequest: () => false, // Better gesture handling in RN 0.80.2
       onPanResponderMove: (evt, gestureState) => {
         scrollX.setValue(-(gestureState.dx / sensitivity));
-        // scrollX.setValue(offset - (gestureState.dx / sensitivity));
       },
       onPanResponderRelease: (evt, gestureState) => {
         scrollX.flattenOffset();
@@ -103,7 +102,7 @@ class Coverflow extends Component {
         const count = Children.count(this.props.children);
         const selection = Math.round(this.scrollPos);
 
-        // Damp out the scroll with certain deceleration
+        // Improved velocity handling for React Native 0.80.2
         if (selection > 0 && selection < count - 2 && Math.abs(gestureState.vx) > 1) {
           const velocity = -Math.sign(gestureState.vx)
                   * (clamp(Math.abs(gestureState.vx), 3, 5) / sensitivity);
@@ -113,6 +112,7 @@ class Coverflow extends Component {
             velocity,
             deceleration,
             useNativeDriver: false, // transform animations cannot use native driver
+            isInteraction: false, // Prevents blocking other interactions in RN 0.80.2
           }).start(({ finished }) => {
             // Only snap to finish if the animation was completed gracefully
             if (finished) {
@@ -155,7 +155,9 @@ class Coverflow extends Component {
   }
 
   componentWillUnmount() {
-    this.state.scrollX.removeListener(this.listenerId);
+    if (this.scrollListener) {
+      this.state.scrollX.removeListener(this.scrollListener);
+    }
   }
 
   onScroll = ({ value }) => {
@@ -201,6 +203,7 @@ class Coverflow extends Component {
       Animated.spring(scrollX, {
         toValue: finalPos,
         useNativeDriver: false, // transform animations cannot use native driver
+        isInteraction: false, // Prevents blocking other interactions in RN 0.80.2
       }).start();
     }
   }
@@ -264,6 +267,15 @@ class Coverflow extends Component {
           {...props}
           onLayout={this.onLayout}
           {...this.panResponder.panHandlers}
+          accessible={true}
+          accessibilityRole="adjustable"
+          accessibilityLabel="Coverflow carousel"
+          accessibilityHint="Swipe left or right to navigate between items"
+          accessibilityValue={{
+            min: 0,
+            max: children.length - 1,
+            now: this.state.selection,
+          }}
         >
           {children.map(this.renderItem)}
         </View>
