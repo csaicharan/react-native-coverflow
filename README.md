@@ -1,6 +1,15 @@
 # react-native-coverflow
 A Coverflow component for react-native.
 
+**✅ Compatible with React Native 0.80.2+**  
+**✅ Updated for modern React patterns**  
+**✅ Optimized animations with native driver**
+
+## Compatibility
+- React Native: 0.60.0+
+- React: 16.8.0+
+- Supports React Native 0.80.2 and above
+
 ## Installation
 >`$ npm install --save react-native-coverflow`
 

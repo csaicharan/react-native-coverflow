@@ -1,4 +1,4 @@
-import React, { Component, Children } from 'react';
+import React, { Component, Children, createContext } from 'react';
 import { Animated, View, PanResponder, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -14,6 +14,9 @@ import Item from './Item';
 import clamp from './clamp';
 import fixChildrenOrder from './fixChildrenOrder';
 import convertSensitivity from './convertSensitivity';
+
+// Create context for animated position
+export const AnimatedPositionContext = createContext();
 
 const styles = StyleSheet.create({
   container: {
@@ -67,12 +70,17 @@ class Coverflow extends Component {
       selection: props.initialSelection,
       children: fixChildrenOrder(props, props.initialSelection),
     };
+
+    // Initialize pan responder and scroll listener in constructor
+    this.initializePanResponder(scrollX, sensitivity);
   }
 
-  componentWillMount() {
-    const { scrollX, sensitivity } = this.state;
+  componentDidMount() {
+    const { scrollX } = this.state;
     this.scrollListener = scrollX.addListener(this.onScroll);
+  }
 
+  initializePanResponder = (scrollX, sensitivity) => {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => (
@@ -104,6 +112,7 @@ class Coverflow extends Component {
           Animated.decay(scrollX, {
             velocity,
             deceleration,
+            useNativeDriver: false, // transform animations cannot use native driver
           }).start(({ finished }) => {
             // Only snap to finish if the animation was completed gracefully
             if (finished) {
@@ -117,21 +126,32 @@ class Coverflow extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    // Check if the children property changes on addition / removal
+  static getDerivedStateFromProps(nextProps, prevState) {
     const sensitivity = convertSensitivity(nextProps.sensitivity);
-    const selection = clamp(this.state.selection, 0, Children.count(nextProps.children) - 1);
+    const selection = clamp(prevState.selection, 0, Children.count(nextProps.children) - 1);
     const children = fixChildrenOrder(nextProps, selection);
 
-    if (this.state.selection !== selection) {
-      this.state.scrollX.setValue(selection);
+    // Return new state if changes are needed
+    if (prevState.selection !== selection || prevState.sensitivity !== sensitivity) {
+      return {
+        selection,
+        sensitivity,
+        children,
+      };
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // Handle scrollX value change when selection changes
+    if (prevState.selection !== this.state.selection) {
+      this.state.scrollX.setValue(this.state.selection);
     }
 
-    this.setState({
-      selection,
-      sensitivity,
-      children,
-    });
+    // Update pan responder if sensitivity changed
+    if (prevState.sensitivity !== this.state.sensitivity) {
+      this.initializePanResponder(this.state.scrollX, this.state.sensitivity);
+    }
   }
 
   componentWillUnmount() {
@@ -180,6 +200,7 @@ class Coverflow extends Component {
 
       Animated.spring(scrollX, {
         toValue: finalPos,
+        useNativeDriver: false, // transform animations cannot use native driver
       }).start();
     }
   }
@@ -234,17 +255,19 @@ class Coverflow extends Component {
       wingSpan,
       ...props
     } = this.props;
-    const { children } = this.state;
+    const { children, scrollX } = this.state;
 
     return (
-      <View
-        style={[styles.container, style]}
-        {...props}
-        onLayout={this.onLayout}
-        {...this.panResponder.panHandlers}
-      >
-        {children.map(this.renderItem)}
-      </View>
+      <AnimatedPositionContext.Provider value={scrollX}>
+        <View
+          style={[styles.container, style]}
+          {...props}
+          onLayout={this.onLayout}
+          {...this.panResponder.panHandlers}
+        >
+          {children.map(this.renderItem)}
+        </View>
+      </AnimatedPositionContext.Provider>
     );
   }
 }

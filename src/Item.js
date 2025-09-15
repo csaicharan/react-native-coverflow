@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, useContext } from 'react';
 import { Animated, TouchableWithoutFeedback, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
+
+import { AnimatedPositionContext } from './Coverflow';
 
 const styles = StyleSheet.create({
   container: {
@@ -13,6 +15,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+// Context wrapper for children components
+const AnimatedPositionWrapper = ({ children, position }) => {
+  const scroll = useContext(AnimatedPositionContext);
+  
+  const animatedPosition = scroll ? scroll.interpolate({
+    inputRange: [position - 2, position - 1, position, position + 1, position + 2],
+    outputRange: [-1, -1, 0, 1, 1],
+  }) : null;
+
+  // Clone the child and add the animatedPosition prop if needed
+  if (React.isValidElement(children) && animatedPosition) {
+    return React.cloneElement(children, { animatedPosition });
+  }
+  
+  return children;
+};
 
 class Item extends Component {
   static propTypes = {
@@ -28,20 +47,6 @@ class Item extends Component {
     scaleFurther: PropTypes.number.isRequired,
     onSelect: PropTypes.func.isRequired,
   };
-
-  static childContextTypes = {
-    animatedPosition: PropTypes.instanceOf(Animated.Interpolation),
-  };
-
-  getChildContext() {
-    const { scroll, position } = this.props;
-    return {
-      animatedPosition: scroll.interpolate({
-        inputRange: [position - 2, position - 1, position, position + 1, position + 2],
-        outputRange: [-1, -1, 0, 1, 1],
-      }),
-    };
-  }
 
   shouldComponentUpdate(nextProps) {
     // Only if the props are different
@@ -114,7 +119,9 @@ class Item extends Component {
       <View pointerEvents="box-none" style={styles.container}>
         <TouchableWithoutFeedback onPress={() => onSelect(position)}>
           <Animated.View style={style}>
-            {this.props.children}
+            <AnimatedPositionWrapper position={position}>
+              {this.props.children}
+            </AnimatedPositionWrapper>
           </Animated.View>
         </TouchableWithoutFeedback>
       </View>
