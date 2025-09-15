@@ -11,6 +11,8 @@
     "build": "babel --out-dir lib --ignore \"**/__tests__/**\" src --source-maps",
     "clean": "rimraf lib && mkdir lib",
     "prepublishOnly": "rimraf lib && babel --out-dir lib --ignore \"**/__tests__/**\" src",
+    "dev:link": "yarn build && yarn link",
+    "dev:unlink": "yarn unlink",
     "test": "jest"
   },
   "repository": {

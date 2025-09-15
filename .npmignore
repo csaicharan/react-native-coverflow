@@ -1,0 +1,32 @@
+# Source files (we only want compiled lib files in the published package)
+src/
+.babelrc
+.eslintrc
+
+# Development files
+*.log
+yarn-error.log
+npm-debug.log
+
+# Test files
+__tests__/
+test/
+*.test.js
+*.spec.js
+
+# Development dependencies
+node_modules/
+
+# Git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
