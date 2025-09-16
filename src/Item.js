@@ -99,6 +99,7 @@ const Item = memo(({
         accessibilityRole="button"
         accessibilityLabel={`Coverflow item ${position + 1}`}
         accessibilityHint="Tap to select this item"
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // Improve touch target
       >
         <Animated.View style={style}>
           <AnimatedPositionWrapper position={position}>
