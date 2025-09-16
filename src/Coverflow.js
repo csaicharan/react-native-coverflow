@@ -84,7 +84,7 @@ class Coverflow extends Component {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        Math.abs(gestureState.dx) > 10
+        return Math.abs(gestureState.dx) > 10
       },
       onPanResponderGrant: () => {
         scrollX.stopAnimation();
