@@ -84,9 +84,7 @@ class Coverflow extends Component {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Reduce threshold for better responsiveness - 3px is more suitable for modern devices
-        const shouldRespond = Math.abs(gestureState.dx) > 3 || Math.abs(gestureState.dy) > 3;
-        return shouldRespond;
+        Math.abs(gestureState.dx) > 10
       },
       onPanResponderGrant: () => {
         scrollX.stopAnimation();
@@ -94,38 +92,30 @@ class Coverflow extends Component {
       },
       onPanResponderTerminationRequest: () => false, // Better gesture handling in RN 0.80.2
       onPanResponderMove: (evt, gestureState) => {
-        // Improved gesture handling with better sensitivity application
-        const deltaX = -(gestureState.dx / sensitivity);
-        scrollX.setValue(deltaX);
+        scrollX.setValue(-(gestureState.dx / sensitivity));
       },
       onPanResponderRelease: (evt, gestureState) => {
         scrollX.flattenOffset();
 
         const count = Children.count(this.props.children);
-        const currentPos = this.scrollPos;
-        
-        // Improved velocity and distance-based logic
-        const moveDistance = Math.abs(gestureState.dx);
-        const velocity = Math.abs(gestureState.vx);
-        const shouldUseVelocity = velocity > 0.3 && moveDistance > 20;
+        const selection = Math.round(this.scrollPos);
 
-        if (shouldUseVelocity && currentPos >= 0 && currentPos < count - 1) {
-          // Better velocity calculation with improved sensitivity handling
-          const normalizedVelocity = -Math.sign(gestureState.vx) * clamp(velocity * 2, 0.5, 4);
-          const adjustedVelocity = normalizedVelocity / (sensitivity * 0.3);
+        // Damp out the scroll with certain deceleration
+        if (selection > 0 && selection < count - 2 && Math.abs(gestureState.vx) > 1) {
+          const velocity = -Math.sign(gestureState.vx)
+            * (clamp(Math.abs(gestureState.vx), 3, 5) / sensitivity);
           const deceleration = this.props.deceleration;
 
           Animated.decay(scrollX, {
-            velocity: adjustedVelocity,
+            velocity,
             deceleration,
-            useNativeDriver: false, // transform animations cannot use native driver
-            isInteraction: false, // Prevents blocking other interactions in RN 0.80.2
           }).start(({ finished }) => {
-            // Always snap to position after decay, regardless of finished state
-            this.snapToPosition();
+            // Only snap to finish if the animation was completed gracefully
+            if (finished) {
+              this.snapToPosition();
+            }
           });
         } else {
-          // For slower gestures or small movements, immediately snap
           this.snapToPosition();
         }
       },
@@ -167,25 +157,15 @@ class Coverflow extends Component {
   }
 
   onScroll = ({ value }) => {
-    // Update the most recent value
     this.scrollPos = value;
 
     const count = this.state.children.length;
+
     const newSelection = clamp(Math.round(value), 0, count - 1);
-    
-    // Only update state if selection actually changed to prevent unnecessary re-renders
     if (newSelection !== this.state.selection) {
-      // Use requestAnimationFrame to batch state updates for better performance
-      requestAnimationFrame(() => {
-        this.setState({
-          selection: newSelection,
-          children: fixChildrenOrder(this.props, newSelection),
-        });
-        
-        // Call onChange callback when selection changes
-        if (this.props.onChange) {
-          this.props.onChange(newSelection);
-        }
+      this.setState({
+        selection: newSelection,
+        children: fixChildrenOrder(this.props, newSelection),
       });
     }
   }
@@ -197,7 +177,6 @@ class Coverflow extends Component {
   }
 
   onSelect = (idx) => {
-    // Check if the current selection is "exactly" the same
     if (idx === Math.round(this.scrollPos)) {
       if (this.props.onPress) {
         this.props.onPress(idx);
@@ -212,21 +191,11 @@ class Coverflow extends Component {
     const count = children.length;
 
     const finalPos = clamp(Math.round(pos), 0, count - 1);
-    
-    // Use a tolerance to prevent unnecessary animations for very small differences
-    const tolerance = 0.01;
-    if (Math.abs(finalPos - this.scrollPos) > tolerance) {
-      // Call onChange only when position actually changes
-      if (this.props.onChange && finalPos !== this.state.selection) {
-        this.props.onChange(finalPos);
-      }
+    if (finalPos !== this.scrollPos) {
+      this.props.onChange(finalPos);
 
       Animated.spring(scrollX, {
         toValue: finalPos,
-        useNativeDriver: false, // transform animations cannot use native driver
-        isInteraction: false, // Prevents blocking other interactions in RN 0.80.2
-        tension: 100, // Improved spring animation settings for smoother feel
-        friction: 8,
       }).start();
     }
   }
